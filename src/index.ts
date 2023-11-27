@@ -1,1 +1,1 @@
-import './slider'
+import './skip-limit'
