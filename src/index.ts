@@ -1,43 +1,56 @@
-import { of, async, asap, from, combineLatest, map, Subject, take, observeOn, queue, subscribeOn } from "rxjs";
+import { animationFrame, defer, interval, map, takeWhile, tap } from "rxjs";
 
-// console.log('start');
-// of(1, 2, 3, 4)                   // sync
-//   .subscribe(console.log)
-// console.log('end');
+const div = document.querySelector('div') as HTMLDivElement;
 
-// console.log('start');
-// of(1, 2, 3, 4, async)            // async
-//   .subscribe(console.log)
-// console.log('end');
+// interval(0, animationFrame)
+//   .subscribe((v) => {
+//     div.style.transform = `translate3d(0, ${v}px, 0)`
+//   })
 
-// console.log('start');
-// of(1, 2, 3, 4, asap)             // asap
-//   .subscribe(console.log)
-// console.log('end');
-
-
-// const a$ = from([1, 2], asap);
-// const b$ = of(10);
-
-// const c$ = combineLatest([a$, b$])
-//   .pipe(
-//     map(([a, b]) => a + b)
-//   )
-
-// c$.subscribe(console.log)
-
-const signal = new Subject<number>();
-let count = 0;
-const calc = (count: number) => console.log('do some calc', count);
-console.log('start');
-signal.pipe(
-  observeOn(queue),
-  // subscribeOn(queue),
-  take(1600)
-)
-  .subscribe((v: number) => {
-    calc(v);
-    signal.next(v++)
+function msElapsed(schedule = animationFrame) {
+  return defer(() => {
+    const start = schedule.now()
+    return interval(0, schedule)
+      .pipe(
+        map(() => schedule.now() - start)
+      )
   })
-signal.next(count++)
-console.log('end');
+}
+
+function duration(ms: number, schedule = animationFrame) {
+  return msElapsed(schedule)
+    .pipe(
+      map((time) => {
+        return time / ms;
+      }),
+      takeWhile((percentage) => percentage <= 1),
+    )
+}
+
+function distance(px: number) {
+  return (percentage: number) => percentage * px;
+}
+
+const animationFn = (percentage: number) => {
+  return Math.sin(-13 * (percentage + 1) * Math.PI * 2) * Math.pow(2, -10 * percentage) + 1;
+}
+
+function animateDown(element: HTMLDivElement) {
+  return duration(20000)
+    .pipe(
+      map(animationFn),
+      map(distance(100)),
+      tap((frame) => {
+        element.style.transform = `translate3d(0, ${frame}px, 0)`
+      })
+    )
+}
+
+animateDown(div)
+  .subscribe(
+    () => {},
+    () => {},
+    () => {
+      console.log('completed');
+    }
+  )
