@@ -1,111 +1,74 @@
-import { interval, of, zip, map, catchError, tap, EMPTY, retry, retryWhen, delay, switchMap, fromEvent } from "rxjs";
+/**
+ * Subject
+ */
 
-const sequence1$ = interval(1000);
-const sequence2$ = of('1', '2', '3', 4, '5', '6', '7');
+// // Subject = Observable + Subscriber
 
-const sequence$ = zip(sequence1$, sequence2$);
+// import { Subject } from "rxjs";
 
-// sequence$
-//   .pipe(
-//     // map(([_x, y]: [number, number | string]) => {
-//     //   return (y as any).toUpperCase();
+// const sequence$$ = new Subject();
 
-//     //   // try {
-//     //   //   return (y as any).toUpperCase();
-//     //   // } catch (err) {
-//     //   //   console.log(err);
-//     //   //   return '0';
-//     //   // }
-//     // }),
-//     switchMap(([_x, y]: [number, number | string]) => {
-//       return of(y)
-//         .pipe(
-//           map((y) => {
-//             return (y as any).toUpperCase();
-//           }),
-//           catchError((err, source$) => {
-//             console.log('CATCH err', err);
-//             return EMPTY;
-//           }),
-//         )
-//     }),
-//     // tap(() => {
-//     //   console.log('without error');
-//     // }),
-//     // // retry(3),
-//     // retryWhen((errObs) => errObs.pipe(delay(5000))),
-//     // catchError((err, source$) => {
-//     //   console.log('CATCH err', err);
-//     //   return EMPTY;
-//     //   // return source$;
-//     // }),
-//     // tap(() => {
-//     //   console.log('after catch');
-//     // })
-//   )
-//   .subscribe(
-//     (v) => {
-//       console.log(v);
-//     },
-//     (err) => {
-//       console.log('Err', err);
-//     },
-//     () => {
-//       console.log('completed');
-//     }
-//   )
+// sequence$$.next('RxJS');
+// sequence$$.next('Angular');
 
-fromEvent(document, 'click')
-    .pipe(
-      switchMap(() => {
-        return sequence$
-          .pipe(
-            // map(([_x, y]: [number, number | string]) => {
-            //   return (y as any).toUpperCase();
-        
-            //   // try {
-            //   //   return (y as any).toUpperCase();
-            //   // } catch (err) {
-            //   //   console.log(err);
-            //   //   return '0';
-            //   // }
-            // }),
-            switchMap(([_x, y]: [number, number | string]) => {
-              return of(y)
-                .pipe(
-                  map((y) => {
-                    return (y as any).toUpperCase();
-                  }),
-                  catchError((err, source$) => {
-                    console.log('CATCH err', err);
-                    return EMPTY;
-                  }),
-                )
-            }),
-            // tap(() => {
-            //   console.log('without error');
-            // }),
-            // // retry(3),
-            // retryWhen((errObs) => errObs.pipe(delay(5000))),
-            // catchError((err, source$) => {
-            //   console.log('CATCH err', err);
-            //   return EMPTY;
-            //   // return source$;
-            // }),
-            // tap(() => {
-            //   console.log('after catch');
-            // })
-          )
-      })
-    )
-      .subscribe(
-        (v) => {
-          console.log(v);
-        },
-        (err) => {
-          console.log('Err', err);
-        },
-        () => {
-          console.log('completed');
-        }
-      )
+// sequence$$.subscribe((v) => {
+//   console.log(v);
+// })
+
+// sequence$$.next('Node');
+
+/**
+ * Service
+ */
+import './component-1';
+import './component-2';
+
+/**
+ * AsyncSubject
+ */
+
+// import { AsyncSubject } from 'rxjs';
+
+// const sequence$$ = new AsyncSubject();
+
+// sequence$$.subscribe((v) => {
+//   console.log('Sub 1', v);
+// })
+
+// sequence$$.next('Hi all');
+// sequence$$.next('RxJs');
+// sequence$$.next('Redux');
+// sequence$$.next('Node');
+
+// setTimeout(() => {
+//   sequence$$.complete();
+//   sequence$$.subscribe((v) => {
+//     console.log('Sub 2', v);
+//   })
+// }, 5000)
+
+import { Observable, AsyncSubject } from 'rxjs';
+import { ajax } from 'rxjs/ajax'
+
+function getItems(url: string) {
+  let subject: AsyncSubject<any>;
+  return new Observable((subscriber) => {
+    if (!subject) {
+      subject = new AsyncSubject();
+      ajax(url).subscribe(subject);
+    }
+
+    return subject.subscribe(subscriber)
+  })
+}
+
+const items = getItems('https://jsonplaceholder.typicode.com/todos')
+items.subscribe((v) => {
+  console.log('todos 1', v)
+})
+
+setTimeout(() => {
+  items.subscribe((v) => {
+    console.log('todos 2', v)
+  })
+}, 5000)

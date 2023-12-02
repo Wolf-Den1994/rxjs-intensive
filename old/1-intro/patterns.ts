@@ -1,3 +1,5 @@
+// ReactiveX = iterator + observer + FF
+
 /**
  * Step 1
  * Iterator
