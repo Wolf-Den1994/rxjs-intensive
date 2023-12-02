@@ -1,15 +1,13 @@
-import { fromEvent } from 'rxjs';
-import { ajax } from 'rxjs/ajax'
-import './live-search'
-import { liveSearch, request } from './live-search';
+import { fromEvent } from "rxjs";
+import { drag } from "./grag-drop";
 
-const inputEl = document.querySelector('input') as HTMLInputElement;
-const container = document.querySelector('.container') as HTMLDivElement;
+const box = document.querySelector('.draggable') as HTMLDivElement;
+const mousedown$ = fromEvent<MouseEvent>(box, 'mousedown');
+const mousemove$ = fromEvent<MouseEvent>(document, 'mousemove');
+const mouseup$ = fromEvent<MouseEvent>(box, 'mouseup');
 
-liveSearch(
-  fromEvent<InputEvent>(inputEl, 'input'),
-  (text) => request(ajax(`https:/api.github.com/search/repositories?q=${text}`))
-)
-  .subscribe((htmlStr) => {
-    container.innerHTML = htmlStr;
+drag(mousedown$, mousemove$, mouseup$)
+  .subscribe((pos) => {
+    box.style.left = `${pos.left}px`;
+    box.style.top = `${pos.top}px`;
   })
